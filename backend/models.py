@@ -32,3 +32,5 @@ class Answer(BaseModel):
 class TokenData(BaseModel):
     user_id: int
 
+class Notification(BaseModel):
+    user_email: str
