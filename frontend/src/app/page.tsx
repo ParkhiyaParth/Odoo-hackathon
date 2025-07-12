@@ -1,9 +1,19 @@
-'use client';
+"use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Navbar from "./components/navbar";
 import NotificationBell from "./components/NotificationBell";
-import { Loader2, Filter, PlusCircle, ChevronDown, MessageSquare, ThumbsUp, ThumbsDown, Search } from 'lucide-react';
+import RichTextEditor from "./components/RichTextEditor";
+import {
+  Loader2,
+  Filter,
+  PlusCircle,
+  ChevronDown,
+  MessageSquare,
+  ThumbsUp,
+  ThumbsDown,
+  Search,
+} from "lucide-react";
 
 interface Question {
   _id: string;
@@ -23,24 +33,34 @@ interface Question {
 
 export default function Page() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
+    null
+  );
   const [filter, setFilter] = useState("newest");
   const [loading, setLoading] = useState(false);
   const [notificationCount, setNotificationCount] = useState(3);
   const [newAnswer, setNewAnswer] = useState("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // Add this line
+  const questionsPerPage = 3; // Add this line
 
   const fetchQuestions = async (search = "") => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/questions?filter=${filter}`;
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/get-all-questions`;
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
       const res = await fetch(url);
       const data = await res.json();
-      setQuestions(data);
+
+      const normalizedData = data.map((q: any) => ({
+        ...q,
+        answers: Array.isArray(q.answers) ? q.answers : [],
+      }));
+
+      setQuestions(normalizedData);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
     } finally {
@@ -55,19 +75,19 @@ export default function Page() {
   const handleSubmitAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedQuestion || !newAnswer.trim()) return;
-    
+
     try {
       const updatedQuestion = {
         ...selectedQuestion,
         answers: [
-          ...selectedQuestion.answers,
+          ...(selectedQuestion.answers || []),
           {
             content: newAnswer,
             author: "You",
             votes: 0,
-            createdAt: new Date().toISOString()
-          }
-        ]
+            createdAt: new Date().toISOString(),
+          },
+        ],
       };
       setSelectedQuestion(updatedQuestion);
       setNewAnswer("");
@@ -80,6 +100,14 @@ export default function Page() {
     e.preventDefault();
     fetchQuestions(searchQuery);
   };
+  // Calculate pagination - ADD THESE LINES RIGHT BEFORE return (
+  const indexOfLastQuestion = currentPage * questionsPerPage;
+  const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
+  const currentQuestions = questions.slice(
+    indexOfFirstQuestion,
+    indexOfLastQuestion
+  );
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,7 +118,10 @@ export default function Page() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-black">
           <div className="w-full flex items-center gap-4">
             {/* Search Form */}
-            <form onSubmit={handleSearch} className="flex items-center gap-2 w-full md:w-1/3">
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center gap-2 w-full md:w-1/3"
+            >
               <input
                 type="text"
                 placeholder="Search"
@@ -98,17 +129,17 @@ export default function Page() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button 
+              <button
                 type="submit"
                 className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
               >
                 <Search size={18} />
               </button>
             </form>
-            
+
             {/* Filter Dropdown */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                 className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded transition text-sm font-medium"
               >
@@ -116,7 +147,7 @@ export default function Page() {
                 {filter === "newest" ? "Newest" : "Unanswered"}
                 <ChevronDown size={16} />
               </button>
-              
+
               {showFilterDropdown && (
                 <div className="absolute z-10 mt-1 w-40 bg-white rounded-md shadow-lg">
                   <button
@@ -125,7 +156,9 @@ export default function Page() {
                       setShowFilterDropdown(false);
                     }}
                     className={`block w-full text-left px-4 py-2 text-sm ${
-                      filter === "newest" ? "bg-blue-100 text-blue-800" : "text-gray-700 hover:bg-gray-100"
+                      filter === "newest"
+                        ? "bg-blue-100 text-blue-800"
+                        : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
                     Newest
@@ -136,7 +169,9 @@ export default function Page() {
                       setShowFilterDropdown(false);
                     }}
                     className={`block w-full text-left px-4 py-2 text-sm ${
-                      filter === "unanswered" ? "bg-blue-100 text-blue-800" : "text-gray-700 hover:bg-gray-100"
+                      filter === "unanswered"
+                        ? "bg-blue-100 text-blue-800"
+                        : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
                     Unanswered
@@ -144,7 +179,7 @@ export default function Page() {
                 </div>
               )}
             </div>
-            
+
             {/* Ask Question Button */}
             <div className="flex items-center gap-4 ml-auto">
               <NotificationBell count={notificationCount} />
@@ -164,11 +199,11 @@ export default function Page() {
         {selectedQuestion ? (
           <div className="md:col-span-4 space-y-6">
             {/* Back button */}
-            <button 
+            <button
               onClick={() => setSelectedQuestion(null)}
               className="text-blue-600 hover:underline flex items-center gap-1"
             >
-              ← Back to questions
+              Back to questions
             </button>
 
             {/* Question Detail */}
@@ -180,22 +215,33 @@ export default function Page() {
                 {selectedQuestion.description}
               </div>
               <div className="flex flex-wrap gap-2 mb-6">
-                {selectedQuestion.tags.map(tag => (
-                  <span key={tag} className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                {selectedQuestion.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                  >
                     {tag}
                   </span>
                 ))}
               </div>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium text-gray-700">{selectedQuestion.author}</span>
+                <span className="font-medium text-gray-700">
+                  {selectedQuestion.author}
+                </span>
                 <div className="flex items-center space-x-4">
                   <span className="flex items-center">
-                    <MessageSquare className="mr-1" /> {selectedQuestion.answers.length} answers
+                    <MessageSquare className="mr-1" />{" "}
+                    {Array.isArray(selectedQuestion.answers)
+                      ? selectedQuestion.answers.length
+                      : 0}{" "}
+                    answers
                   </span>
                   <span className="flex items-center">
                     <ThumbsUp className="mr-1" /> {selectedQuestion.votes} votes
                   </span>
-                  <span>{new Date(selectedQuestion.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    {new Date(selectedQuestion.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -203,22 +249,30 @@ export default function Page() {
             {/* Answers Section */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-800">Answers</h2>
-              {selectedQuestion.answers.length > 0 ? (
+              {Array.isArray(selectedQuestion.answers) &&
+              selectedQuestion.answers.length > 0 ? (
                 selectedQuestion.answers.map((answer, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="prose prose-sm max-w-none mb-4 whitespace-pre-line">
-                      {answer.content}
-                    </div>
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg shadow-sm p-6"
+                  >
+                    <div
+                      className="prose prose-sm max-w-none mb-4 whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: answer.content }}
+                    />
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <div>
-                        <span className="font-medium text-gray-700">{answer.author}</span> • {new Date(answer.createdAt).toLocaleDateString()}
+                        <span className="font-medium text-gray-700">
+                          {answer.author}
+                        </span>{" "}
+                        • {new Date(answer.createdAt).toLocaleDateString()}
                       </div>
                       <div className="flex items-center space-x-4">
                         <button className="flex items-center hover:text-green-600">
                           <ThumbsUp className="mr-1" /> {answer.votes}
                         </button>
                         <button className="flex items-center hover:text-red-600">
-                          <ThumbsDown className="mr-1" /> 
+                          <ThumbsDown className="mr-1" />
                         </button>
                       </div>
                     </div>
@@ -229,20 +283,22 @@ export default function Page() {
               )}
             </div>
 
-            {/* Submit Answer Form */}
+            {/* Submit Answer Form with RichTextEditor */}
+
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Submit Your Answer</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Submit Your Answer
+              </h2>
               <form onSubmit={handleSubmitAnswer}>
-                <textarea
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition mb-4 min-h-[200px]"
-                  placeholder="Write your answer here..."
-                  value={newAnswer}
-                  onChange={(e) => setNewAnswer(e.target.value)}
-                  required
+                <RichTextEditor
+                  content={newAnswer}
+                  onChange={setNewAnswer}
+                  placeholder="Write your detailed answer here..."
+                  className="border-gray-300"
                 />
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
                 >
                   Post Answer
                 </button>
@@ -256,55 +312,94 @@ export default function Page() {
                 <Loader2 className="animate-spin text-blue-600" size={30} />
               </div>
             ) : questions.length === 0 ? (
-              <p className="text-gray-500 text-center mt-10">No questions available.</p>
+              <p className="text-gray-500 text-center mt-10">
+                No questions available.
+              </p>
             ) : (
               <>
-                {questions.map((q) => (
-                  <div 
+                {currentQuestions.map((q) => (
+                  <div
                     key={q._id}
                     className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition cursor-pointer"
                     onClick={() => setSelectedQuestion(q)}
                   >
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{q.title}</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      {q.title}
+                    </h3>
                     <p className="text-gray-600 mb-4 line-clamp-2">
-                      {q.description.length > 150 
-                        ? `${q.description.substring(0, 150)}...` 
+                      {q.description.length > 150
+                        ? `${q.description.substring(0, 150)}...`
                         : q.description}
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {q.tags.map(tag => (
-                        <span key={tag} className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                      {q.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                        >
                           {tag}
                         </span>
                       ))}
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span className="font-medium text-gray-700">{q.author}</span>
-                      <div className="flex items-center space-x-4">
-                        <span className="flex items-center">
-                          <MessageSquare className="mr-1" /> {q.answers.length} answers
-                        </span>
-                        <span className="flex items-center">
-                          <ThumbsUp className="mr-1" /> {q.votes} votes
-                        </span>
-                        <span>{new Date(q.createdAt).toLocaleDateString()}</span>
-                      </div>
+                      <span className="font-medium text-gray-700">
+                        {q.author}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageSquare className="mr-1" />
+                        {Array.isArray(q.answers) ? q.answers.length : 0}{" "}
+                        answers
+                      </span>
                     </div>
                   </div>
                 ))}
                 {/* Pagination */}
-                <div className="flex justify-center mt-8">
-                  <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-8">
+                    <div className="flex space-x-2">
+                      {/* Previous button */}
                       <button
-                        key={num}
-                        className={`px-3 py-1 rounded ${num === 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
                       >
-                        {num}
+                        Previous
                       </button>
-                    ))}
+
+                      {/* Page numbers */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (pageNum) => (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-1 rounded ${
+                              currentPage === pageNum
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-200 hover:bg-gray-300"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      )}
+
+                      {/* Next button */}
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </main>
