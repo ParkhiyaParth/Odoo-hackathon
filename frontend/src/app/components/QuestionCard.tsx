@@ -1,9 +1,9 @@
 'use client';
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Navbar from "./components/navbar";
-import NotificationBell from "./components/NotificationBell";
-import QuestionCard from "./components/QuestionCard";
+import Navbar from "./navbar";
+import NotificationBell from "./NotificationBell";
+import QuestionCard from "./QuestionCard";
 import { useRouter } from 'next/router';
 import { Loader2, Filter, PlusCircle, ChevronDown, MessageSquare, ThumbsUp, ThumbsDown, Search, Home } from 'lucide-react';
 

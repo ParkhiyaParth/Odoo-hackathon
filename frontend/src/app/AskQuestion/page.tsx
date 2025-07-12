@@ -139,7 +139,11 @@ const [plainTextDesc, setPlainTextDesc] = useState("");
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
+<<<<<<< HEAD
           description: desc,
+=======
+          description: plainTextDesc,
+>>>>>>> 3ec82b9e207bac2f9a3ea981e1e2d40b990ad59a
           tags: tags.filter((tag) => tag.trim()),
           user_email: "parth@gmail.com"
         }),

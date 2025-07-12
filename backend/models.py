@@ -30,8 +30,7 @@ class Question(BaseModel):
 class Answer(BaseModel):
     question_id: str
     description: str
-    user_email: EmailStr
-    votes: int
+    votes: Optional[int] = 0
 
 class TokenData(BaseModel):
     user_id: int

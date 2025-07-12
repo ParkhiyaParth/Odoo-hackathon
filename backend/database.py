@@ -7,6 +7,7 @@ import bcrypt
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException, Query
+from bson import ObjectId
 
 # Load environment variables from .env file
 load_dotenv()
@@ -66,15 +67,23 @@ def insert_questions(data:Question):
 
     return {"message": "Question added successfully.", "question_id": question_id}
 
-def insert_answer(data: Answer):
-    question =db["questions"].find_one({"question_id": data.question_id})
+from bson import ObjectId
 
+def insert_answer(data: Answer):
+    try:
+        obj_id = ObjectId(data.question_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid question ID format.")
+
+    question = db["questions"].find_one({"_id": obj_id})
+    
     if not question:
         raise HTTPException(status_code=404, detail="Question not found.")
 
     answer_collection.insert_one({
-        "question_id": data.question_id,
+        "question_id": obj_id,
         "description": data.description,
+        "votes": data.votes or 0,
     })
 
     return {"message": "Answer added successfully."}
@@ -107,9 +116,28 @@ def get_all_questions():
             "title": q["title"],
             "description": q["description"],
             "tags": q.get("tags", []),  # ✅ safe get
-            "author": q["user_email"]  # ✅ safe get
+            "author": q.get("user_email", "Anonymous"),  # ✅ safe get
         })
 
     return questions
 
+async def fetch_answers(question_id: str):
+    try:
+        obj_id = ObjectId(question_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid question ID format.")
 
+    try:
+        answers = await answer_collection.find({"question_id": obj_id}).to_list(100)
+        return answers
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def fetch_answers():
+    answers = []
+
+    for doc in answer_collection.find({}, {"description": 1, "_id": 0}):
+        answers.append(doc)
+
+    return answers
