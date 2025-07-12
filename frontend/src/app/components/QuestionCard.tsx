@@ -1,11 +1,9 @@
 'use client';
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Navbar from "./navbar";
-// import NotificationBell from "./components/NotificationBell";
-// If NotificationBell is in the same folder:
-import NotificationBell from "./NotificationBell";
-// Or update the path to where NotificationBell.tsx actually exists.
+import Navbar from "./components/navbar";
+import NotificationBell from "./components/NotificationBell";
+import QuestionCard from "./components/QuestionCard";
 import { useRouter } from 'next/router';
 import { Loader2, Filter, PlusCircle, ChevronDown, MessageSquare, ThumbsUp, ThumbsDown, Search, Home } from 'lucide-react';
 
