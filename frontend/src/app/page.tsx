@@ -14,37 +14,33 @@ interface Question {
   description: string;
   tags: string[];
   author: string;
-  votes: number;
-  createdAt: string;
 }
 
 export default function Page() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filter, setFilter] = useState("newest");
   const [loading, setLoading] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(3); // mock
+  const [notificationCount] = useState(3); // mock
 
   useEffect(() => {
-    async function fetchQuestions() {
-      setLoading(true);
-      try {
-        const res = await fetch(
-<<<<<<< HEAD
-          `${process.env.NEXT_PUBLIC_API_URL}/get-all-questions`
-=======
-          `${process.env.NEXT_PUBLIC_API_URL}/questions?filter=${filter}`
->>>>>>> 97ce21cdc91d1405a0f9a6e7b19db97f8aea35b5
-        );
-        const data = await res.json();
-        setQuestions(data);
-      } catch (err) {
-        console.error("Failed to fetch questions:", err);
-      } finally {
-        setLoading(false);
-      }
+  async function fetchQuestions() {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/get-all-questions`
+      );
+      const data = await res.json();
+      console.log("✅ Fetched questions:", data);
+      setQuestions(data || []);  // <-- fixed here
+    } catch (err) {
+      console.error("Failed to fetch questions:", err);
+    } finally {
+      setLoading(false);
     }
-    fetchQuestions();
-  }, [filter]);
+  }
+  fetchQuestions();
+
+}, [filter]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,8 +103,6 @@ export default function Page() {
                 description={q.description}
                 tags={q.tags}
                 author={q.author}
-                votes={q.votes}
-                createdAt={q.createdAt}
               />
             ))
           )}

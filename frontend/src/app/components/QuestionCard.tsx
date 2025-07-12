@@ -8,8 +8,6 @@ interface QuestionCardProps {
   description: string;
   tags: string[];
   author: string;
-  votes: number;
-  createdAt: string;
 }
 
 export default function QuestionCard({
@@ -18,8 +16,6 @@ export default function QuestionCard({
   description,
   tags,
   author,
-  votes,
-  createdAt,
 }: QuestionCardProps) {
   return (
     <div className="bg-white dark:bg-gray-800 shadow-md p-5 rounded-xl mb-5">
@@ -36,8 +32,6 @@ export default function QuestionCard({
       </div>
       <div className="mt-4 flex justify-between text-sm text-gray-500">
         <span>by {author}</span>
-        <span>{new Date(createdAt).toLocaleDateString()}</span>
-        <span>👍 {votes}</span>
       </div>
     </div>
   );

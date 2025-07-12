@@ -3,19 +3,18 @@
 import Link from "next/link";
 import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation"; // ✅ Import router for redirection
 
 export default function Login() {
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("")
-
+  const [error, setError] = useState("");
   const formref = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // setSubmitted(true);
 
     const formData = new FormData(e.currentTarget);
-
     const email = formData.get("email");
     const password = formData.get("password");
 
@@ -25,33 +24,35 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/login",
-        {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email,
-            password: password
-          })
-        }
-      )
+      const res = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      });
+
+      const result = await res.json();
 
       if (res.ok) {
-        setSubmitted(true);
-      }
-      else {
-        setError("Login failed. Please check your credentials.");
+        // ✅ Store user in localStorage
+        localStorage.setItem("user", JSON.stringify(result.user));
 
+        setSubmitted(true);
+
+        // ✅ Redirect after short delay (or immediately)
+        setTimeout(() => {
+          router.push("/"); // redirect to homepage
+        }, 1000);
+      } else {
+        setError("Login failed. Please check your credentials.");
         setSubmitted(false);
 
-        setTimeout(() => {
-          setError("")
-        }, 5000);
-
-        formref.current?.reset(); // Reset the form fields
+        setTimeout(() => setError(""), 5000);
+        formref.current?.reset();
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.error("Login error:", err);
       setError("An error occurred while logging in. Please try again.");
       setSubmitted(false);
@@ -71,9 +72,10 @@ export default function Login() {
         >
           Login with Google
         </button>
+
         {submitted ? (
           <p className="text-green-600 font-medium text-center">
-            ✅ Login successful (demo only)
+            ✅ Login successful!
           </p>
         ) : (
           <form ref={formref} onSubmit={handleLogin} className="space-y-5">

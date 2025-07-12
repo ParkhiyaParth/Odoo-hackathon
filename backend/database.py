@@ -6,7 +6,7 @@ from models import Answer,Login
 import bcrypt
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,6 +20,7 @@ question_collections=db["questions"]
 answer_collection=db["answers"]
 login_collection=db["login"]
 
+
 def insert_contact_form(data: ContactForm):
     contact_collection.insert_one(data.dict())
     return {"message": "Contact form submitted successfully."}
@@ -29,21 +30,20 @@ def insert_contact_form(data: ContactForm):
 #     return {"message": "Login data submitted successfully."}
 
 def insert_signup_data(data: SignUp):
-    # Check if the email already exists
     existing_user = signup_collection.find_one({"email": data.email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
 
-    hashed_password=bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt())
-    
+    hashed_password = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt())
+
     signup_collection.insert_one({
-        "name":data.name,
-        "email":data.email,
-        "password":hashed_password,
-        "role":data.role or "user"  # Default role is "user"
+        "name": data.name,
+        "email": data.email,
+        "password": hashed_password.decode("utf-8"),
+        "role": data.role or "user"
     })
-    
-    return {"message": "Signup data submitted successfully."}
+
+    return {"message": "Signup successful"}
 
 def get_next_question_id():
     result = db["counters"].find_one_and_update(
@@ -97,5 +97,19 @@ def insert_login_data(data: Login):
     })
     
     return {"message": "Login data submitted successfully."}
+
+def get_all_questions():
+    questions = []
+
+    for q in question_collections.find():
+        questions.append({
+            "_id": str(q["_id"]),  # ✅ convert ObjectId to string
+            "title": q["title"],
+            "description": q["description"],
+            "tags": q.get("tags", []),  # ✅ safe get
+            "author": q.get("user_email", "Anonymous"),  # ✅ safe get
+        })
+
+    return questions
 
 

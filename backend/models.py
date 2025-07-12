@@ -31,6 +31,7 @@ class Answer(BaseModel):
     question_id: str
     description: str
     user_email: EmailStr
+    votes: int
 
 class TokenData(BaseModel):
     user_id: int
