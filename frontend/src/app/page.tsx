@@ -108,20 +108,7 @@ export default function Page() {
           )}
         </main>
 
-        {/* Help Sidebar */}
-        <aside className="hidden md:block md:col-span-1">
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-2 text-slate-800">Need Help?</h3>
-            <p className="text-sm text-gray-700 mb-3">
-              Ask your question and get expert answers from the community.
-            </p>
-            <a href="/ask-question">
-              <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-                Ask Now
-              </button>
-            </a>
-          </div>
-        </aside>
+       
       </div>
     </div>
   );
