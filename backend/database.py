@@ -107,7 +107,7 @@ def get_all_questions():
             "title": q["title"],
             "description": q["description"],
             "tags": q.get("tags", []),  # ✅ safe get
-            "author": q.get("user_email", "Anonymous"),  # ✅ safe get
+            "author": q["user_email"]  # ✅ safe get
         })
 
     return questions

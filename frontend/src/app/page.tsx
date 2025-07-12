@@ -107,8 +107,6 @@ export default function Page() {
             ))
           )}
         </main>
-
-       
       </div>
     </div>
   );
