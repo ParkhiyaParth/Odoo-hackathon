@@ -196,6 +196,28 @@ export default function Page() {
       {/* Layout */}
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6 pb-10">
         {/* Main Content */}
+<<<<<<< HEAD
+        <main className="md:col-span-2 space-y-4">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="animate-spin text-blue-600" size={30} />
+            </div>
+          ) : questions.length === 0 ? (
+            <p className="text-gray-500 text-center mt-10">No questions available.</p>
+          ) : (
+            questions.map((q) => (
+              <QuestionCard
+                key={q._id}
+                _id={q._id}
+                title={q.title}
+                description={q.description}
+                tags={q.tags}
+                author={q.author}
+              />
+            ))
+          )}
+        </main>
+=======
         {selectedQuestion ? (
           <div className="md:col-span-4 space-y-6">
             {/* Back button */}
@@ -404,6 +426,7 @@ export default function Page() {
             )}
           </main>
         )}
+>>>>>>> 50c481e26ef3623540929e85ff84327a5761304b
       </div>
     </div>
   );
