@@ -1,7 +1,9 @@
 from pymongo import MongoClient
 from models import ContactForm
 from models import SignUp
-# from models import Login
+from models import Question
+from models import Answer
+import bcrypt
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
@@ -14,6 +16,8 @@ db=client["odooDB"]  # Use DB_NAME from .env or default to "myapp"
 contact_collection=db["contacts"]
 # login_collection=db["login"]
 signup_collection=db["sign-up"]
+question_collections=db["questions"]
+answer_collection=db["answers"]
 
 def insert_contact_form(data: ContactForm):
     contact_collection.insert_one(data.dict())
@@ -29,5 +33,50 @@ def insert_signup_data(data: SignUp):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
 
-    signup_collection.insert_one(data.dict())
+    hashed_password=bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt())
+    
+    signup_collection.insert_one({
+        "name":data.name,
+        "email":data.email,
+        "password":hashed_password,
+        "role":data.role or "user"  # Default role is "user"
+    })
+    
     return {"message": "Signup data submitted successfully."}
+
+def get_next_question_id():
+    result = db["counters"].find_one_and_update(
+        {"_id":"question_id"},
+        {"$inc":{"sequence_value":1}},
+        return_document=True
+    )
+
+    return f"Q{result['sequence_value']}"
+
+def insert_questions(data:Question):
+    question_id= get_next_question_id()
+
+    question_collections.insert_one({
+        "question_id": question_id,
+        "title": data.title,
+        "description": data.description,
+        "tags": data.tags,
+    })
+
+    return {"message": "Question added successfully.", "question_id": question_id}
+
+def insert_answer(data: Answer):
+    question =db["questions"].find_one({"question_id": data.question_id})
+
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found.")
+
+    answer_collection.insert_one({
+        "question_id": data.question_id,
+        "description": data.description,
+    })
+
+    return {"message": "Answer added successfully."}
+
+
+

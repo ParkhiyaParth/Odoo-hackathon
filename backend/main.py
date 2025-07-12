@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import ContactForm, SignUp
-from database import insert_contact_form, insert_signup_data
+from models import ContactForm, SignUp, Question,Answer
+from database import insert_contact_form, insert_signup_data,insert_questions,insert_answer
 from auth import auth_router
 
 app = FastAPI()
@@ -24,3 +24,11 @@ async def contact_form(data: ContactForm):
 @app.post("/signup")
 async def signup(data: SignUp):
     return insert_signup_data(data)
+
+@app.post("/question")
+async def add_question(data: Question):
+    return insert_questions(data)
+
+@app.post("/answer")
+async def add_answer(data: Answer):
+    return insert_answer(data)
