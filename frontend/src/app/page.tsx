@@ -27,7 +27,7 @@ export default function Page() {
       setLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/questions`
+          `${process.env.NEXT_PUBLIC_API_URL}/get-all-questions`
         );
         const data = await res.json();
         setQuestions(data);

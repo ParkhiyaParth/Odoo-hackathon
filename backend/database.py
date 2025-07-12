@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from models import ContactForm
 from models import SignUp
 from models import Question
-from models import Answer
+from models import Answer,Login
 import bcrypt
 import os
 from dotenv import load_dotenv
@@ -18,6 +18,7 @@ contact_collection=db["contacts"]
 signup_collection=db["sign-up"]
 question_collections=db["questions"]
 answer_collection=db["answers"]
+login_collection=db["login"]
 
 def insert_contact_form(data: ContactForm):
     contact_collection.insert_one(data.dict())
@@ -78,5 +79,23 @@ def insert_answer(data: Answer):
 
     return {"message": "Answer added successfully."}
 
+async def get_questions():
+    questions = await question_collections.find().to_list(100)
+    return questions
+
+def insert_login_data(data: Login):
+    existing_user = login_collection.find_one({"email": data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered.")
+
+    hashed_password = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt())
+    
+    login_collection.insert_one({
+        "email": data.email,
+        "password": hashed_password,
+        "role": data.role or "user"  # Default role is "user"
+    })
+    
+    return {"message": "Login data submitted successfully."}
 
 

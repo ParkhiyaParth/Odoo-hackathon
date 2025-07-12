@@ -19,15 +19,18 @@ class SignUp(BaseModel):
 class Login(BaseModel):
     email: EmailStr
     password: str    
+    role: Optional[str] = "user"
 
 class Question(BaseModel):
     title: str
     description: str
     tags: List[str]
+    user_email: EmailStr
 
 class Answer(BaseModel):
     question_id: str
     description: str
+    user_email: EmailStr
 
 class TokenData(BaseModel):
     user_id: int
