@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* For the editor content */
+.prose {
+  max-width: 100%;
+}
+
+/* For react-select */
+.react-select-container .react-select__control {
+  @apply border-gray-300 min-h-[42px] hover:border-gray-400;
+}
+.react-select-container .react-select__control--is-focused {
+  @apply border-blue-500 ring-2 ring-blue-200;
+}
+.react-select__menu {
+  @apply border border-gray-300 shadow-lg rounded-md;
+}
