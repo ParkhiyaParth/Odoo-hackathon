@@ -1,3 +1,13 @@
+# Problem Statement
+
+StackIt – A Minimal Q&A Forum Platform
+
+# Team Details
+
+1. Parth Parkhiya (parkhiyaparth@gmail.com)
+2. Dev Bhalani (devbhalani3184@gmail.com)
+3. Sujal Kachhadiya (sujalkachdiya@gmail.com)
+
 # 🚀 Full Stack Project – Next.js + FastAPI
 
 This is a full-stack web application built using:
