@@ -27,14 +27,14 @@ export default function Navbar() {
             href="/" 
             className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hover:from-indigo-700 hover:to-purple-700 transition-all"
           >
-            MyWebsite
+            StakeIt
           </Link>
           
           {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
             <NavLink href="/">Home</NavLink>
-            <NavLink href="/about">About</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
+            {/* <NavLink href="/about">About</NavLink>
+            <NavLink href="/contact">Contact</NavLink> */}
             <NavLink href="/login">Login</NavLink>
             
             <Link 
