@@ -10,6 +10,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Strike from "@tiptap/extension-strike";
 import Image from "@tiptap/extension-image";
 import Select from "react-select";
+import Navbar from "../components/navbar";
 import {
   FiLoader,
   FiTag,
@@ -149,8 +150,10 @@ export default function AskQuestion() {
   }, [title, desc, tags, isSubmitting, editor]);
 
   return (
-    <div className="mt-18 max-w-3xl mx-auto p-4 md:p-6">
-      <div className="space-y-6">
+    <>
+      <Navbar />
+      <div className="mt-18 max-w-3xl mx-auto p-4 md:p-6 bg-white min-h-screen">
+        <div className="space-y-6">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
           Ask a Question
         </h1>
@@ -372,5 +375,6 @@ export default function AskQuestion() {
         </button>
       </div>
     </div>
+    </>
   );
 }
