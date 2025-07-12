@@ -85,14 +85,19 @@ export default function AskQuestion() {
     []
   );
 
-  const editor = useEditor({
-    ...editorConfig,
-    onUpdate: ({ editor }) => {
-      setDesc(editor.getHTML());
-    },
-  });
+const [desc, setDesc] = useState("");
 
-  const [desc, setDesc] = useState("");
+ const editor = useEditor({
+  ...editorConfig,
+  onUpdate: ({ editor }) => {
+    // Store both HTML and plain text versions
+    setDesc(editor.getHTML());
+    setPlainTextDesc(editor.getText()); // Add this line
+  },
+});
+
+// Add a new state for plain text
+const [plainTextDesc, setPlainTextDesc] = useState("");
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value),
@@ -125,29 +130,32 @@ export default function AskQuestion() {
   }, [editor]);
 
   const handleSubmit = useCallback(async () => {
-    if (!title.trim() || !desc || isSubmitting) return;
+  if (!title.trim() || !plainTextDesc || isSubmitting) return;
 
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/question`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description: desc, tags }),
-        }
-      );
-      const data = await res.json();
-      console.log(data);
-      setTitle("");
-      setTags([]);
-      editor?.commands.clearContent();
-    } catch (error) {
-      console.error("Submission error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [title, desc, tags, isSubmitting, editor]);
+  setIsSubmitting(true);
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/question`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: desc,
+          tags: tags.filter((tag) => tag.trim()),
+          user_email: "parth@gmail.com"
+        }),
+      });
+    const data = await res.json();
+    console.log(data);
+    setTitle("");
+    setTags([]);
+    setPlainTextDesc("");
+    editor?.commands.clearContent();
+  } catch (error) {
+    console.error("Submission error:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [title, plainTextDesc, tags, isSubmitting, editor]);
 
   return (
     <>
